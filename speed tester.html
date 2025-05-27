@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cyberpunk Typing Test</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+  body {
+    margin: 0; 
+    background: #0f0f1a;
+    font-family: 'Orbitron', monospace;
+    color: #00fff7;
+    overflow: hidden;
+    display: flex; justify-content: center; align-items: center; height: 100vh;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: "";
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      linear-gradient(#0ff2 1px, transparent 1px),
+      linear-gradient(90deg, #0ff2 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: moveGrid 30s linear infinite;
+    z-index: 0;
+  }
+  @keyframes moveGrid {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 60px 60px, 60px 60px; }
+  }
+
+  .container {
+    background: #02021f;
+    padding: 30px;
+    width: 700px;
+    border-radius: 15px;
+    box-shadow:
+      0 0 15px #00fff7, 
+      0 0 30px #00f0ffaa inset;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 8px #00fff7, 0 0 15px #00ffffcc;
+  }
+
+  label, select, button {
+    font-size: 1.2em;
+  }
+  label {
+    margin-right: 10px;
+  }
+  select {
+    background: #001122;
+    border: 1px solid #00fff7;
+    color: #00fff7;
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: box-shadow 0.3s ease;
+  }
+  select:focus {
+    box-shadow: 0 0 12px #00fff7;
+  }
+
+  button {
+    margin-top: 15px;
+    padding: 12px 0;
+    width: 100%;
+    background: #00fff7;
+    color: #02021f;
+    font-weight: 700;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00fff7;
+    animation: flicker 3s infinite alternate;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #00c9d1;
+    box-shadow: 0 0 30px #00fff7, 0 0 60px #00fff7 inset;
+    animation-play-state: paused;
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  #quoteDisplay {
+    font-size: 1.5em;
+    line-height: 1.6;
+    padding: 15px;
+    border: 2px solid #00fff7;
+    border-radius: 15px;
+    min-height: 140px;
+    margin-top: 20px;
+    position: relative;
+    color: #00ffffcc;
+    user-select: none;
+    overflow-wrap: break-word;
+    animation: waveText 4s ease-in-out infinite;
+  }
+
+  /* Wave text animation */
+  @keyframes waveText {
+    0%, 100% {
+      text-shadow:
+        0 0 5px #00fff7,
+        0 0 10px #00fff7,
+        0 0 15px #00fff7;
+    }
+    50% {
+      text-shadow:
+        0 5px 10px #00ffff88,
+        0 0 15px #00ffffcc,
+        0 0 20px #00fff7;
+    }
+  }
+
+  #quoteDisplay span.correct {
+    color: #00ff6a;
+    text-shadow: 0 0 10px #00ff6a;
+  }
+  #quoteDisplay span.incorrect {
+    color: #ff0044;
+    text-shadow: 0 0 10px #ff0044;
+  }
+
+  /* Blinking cursor behind next char */
+  #quoteDisplay span.cursor {
+    border-left: 2px solid #00fff7;
+    animation: blinkCursor 1s steps(2, start) infinite;
+  }
+  @keyframes blinkCursor {
+    0%, 50% { border-color: #00fff7; }
+    51%, 100% { border-color: transparent; }
+  }
+
+  textarea {
+    margin-top: 20px;
+    width: 100%;
+    height: 120px;
+    font-size: 1.2em;
+    font-family: 'Orbitron', monospace;
+    background: #001122;
+    border: 2px solid #00fff7;
+    border-radius: 15px;
+    color: #00fff7;
+    padding: 12px;
+    resize: none;
+    outline: none;
+    box-shadow: 0 0 10px #00fff7 inset;
+  }
+  textarea:disabled {
+    background: #000b14;
+  }
+
+  #stats {
+    margin-top: 20px;
+    font-size: 1.3em;
+    display: flex;
+    justify-content: space-between;
+    color: #00fff7;
+    text-shadow: 0 0 10px #00fff7;
+  }
+  #wpm, #accuracy {
+    font-weight: 700;
+    animation: pulseText 2s infinite alternate;
+  }
+  @keyframes pulseText {
+    0% { color: #00fff7; text-shadow: 0 0 10px #00fff7; }
+    100% { color: #00ffb7; text-shadow: 0 0 25px #00ffb7; }
+  }
+
+  #reward {
+    margin-top: 25px;
+    font-size: 1.6em;
+    font-weight: 700;
+    text-align: center;
+    color: #00ff9a;
+    text-shadow: 0 0 15px #00ff9a, 0 0 35px #00ff9a;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideFadeIn 1s forwards;
+  }
+  @keyframes slideFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Neon spark particle container */
+  #spark-wrapper {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 0;
+  }
+  .spark {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: radial-gradient(circle, #00fff7, transparent);
+    border-radius: 50%;
+    filter: drop-shadow(0 0 6px #00fff7);
+    animation-name: sparkMove;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  @keyframes sparkMove {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { transform: translateY(-20px) scale(1.4); opacity: 0.6; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Cyberpunk Typing Test</h1>
+  <label for="difficulty">Difficulty:</label>
+  <select id="difficulty">
+    <option value="easy">Easy</option>
+    <option value="medium" selected>Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+
+  <div id="quoteDisplay">Press "Start Test" to begin typing.</div>
+
+  <textarea id="inputArea" placeholder="Start typing here..." disabled></textarea>
+
+  <button id="startBtn">Start Test</button>
+
+  <div id="stats">
+    <div>WPM: <span id="wpm">0</span></div>
+    <div>Accuracy: <span id="accuracy">100%</span></div>
+  </div>
+
+  <div id="reward"></div>
+</div>
+
+<div id="spark-wrapper"></div>
+
+<script>
+  const quotes = {
+    easy: [
+      "Hello world.",
+      "Typing is fun.",
+      "Keep going strong!",
+      "Practice makes perfect."
+    ],
+    medium: [
+      "The quick brown fox jumps over the lazy dog.",
+      "Typing fast helps coding and writing.",
+      "The future belongs to the quick thinkers.",
+      "Challenge yourself every day."
+    ],
+    hard: [
+      "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+      "In the middle of difficulty lies opportunity.",
+      "The only limit to our realization of tomorrow will be our doubts of today.",
+      "Strive not to be a success, but rather to be of value."
+    ]
+  };
+
+  const difficultySelect = document.getElementById('difficulty');
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  const inputArea = document.getElementById('inputArea');
+  const startBtn = document.getElementById('startBtn');
+  const wpmSpan = document.getElementById('wpm');
+  const accuracySpan = document.getElementById('accuracy');
+  const rewardDiv = document.getElementById('reward');
+
+  let selectedQuote = "";
+  let startTime;
+  let timerInterval;
+  let timeLimit = 60;
+  let timeLeft = timeLimit;
+
+  let currentIndex = 0;
+
+  function startTest() {
+    resetUI();
+    selectedQuote = getRandomQuote(difficultySelect.value);
+    displayQuote(selectedQuote);
+    inputArea.disabled = false;
+    inputArea.value = "";
+    inputArea.focus();
+    startTime = new Date();
+    timeLeft = timeLimit;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) endTest();
+    }, 1000);
+    startBtn.disabled = true;
+    startBtn.style.cursor = 'not-allowed';
+    rewardDiv.style.opacity = 0;
+  }
+
+  function resetUI() {
+    clearInterval(timerInterval);
+    wpmSpan.textContent = '0';
+    accuracySpan.textContent = '100%';
+    inputArea.disabled = true;
+    quoteDisplay.innerHTML = "";
+    currentIndex = 0;
+  }
+
+  function getRandomQuote(level) {
+    const arr = quotes[level];
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Display quote with blinking cursor on current char
+  function displayQuote(quote) {
+    quoteDisplay.innerHTML = "";
+    for(let i=0; i<quote.length; i++) {
+      const span = document.createElement('span');
+      span.textContent = quote[i];
+      if(i === currentIndex) span.classList.add('cursor');
+      quoteDisplay.appendChild(span);
+    }
+  }
+
+  function updateQuoteDisplay(input) {
+    const quoteChars = quoteDisplay.querySelectorAll('span');
+    let mistakes = 0;
+
+    for(let i=0; i < quoteChars.length; i++) {
+      quoteChars[i].classList.remove('correct', 'incorrect', 'cursor');
+      if(i === input.length) quoteChars[i].classList.add('cursor');
+
+      if(input[i] == null) {
+        quoteChars[i].classList.remove('correct', 'incorrect');
+      } else if(input[i] === quoteChars[i].textContent) {
+        quoteChars[i].classList.add('correct');
+      } else {
+        quoteChars[i].classList.add('incorrect');
+        mistakes++;
+      }
+    }
+
+    return mistakes;
+  }
+
+  function updateTimerDisplay() {
+    startBtn.textContent = `Time left: ${timeLeft}s`;
+  }
+
+  function updateStats(input, mistakes) {
+    const now = new Date();
+    const timeElapsedMins = (now - startTime) / 1000 / 60;
+    const wordsTyped = input.trim().split(/\s+/).filter(Boolean).length;
+    const wpm = timeElapsedMins > 0 ? Math.round(wordsTyped / timeElapsedMins) : 0;
+    wpmSpan.textContent = wpm;
+
+    const accuracy = input.length === 0 ? 100 : Math.round(((input.length - mistakes) / input.length) * 100);
+    accuracySpan.textContent = accuracy + "%";
+  }
+
+  function endTest() {
+    clearInterval(timerInterval);
+    inputArea.disabled = true;
+    startBtn.disabled = false;
+    startBtn.style.cursor = "pointer";
+    startBtn.textContent = "Start Test";
+    showReward();
+  }
+
+  function showReward() {
+    const wpm = parseInt(wpmSpan.textContent, 10);
+    const accuracy = parseInt(accuracySpan.textContent, 10);
+    let msg = "";
+    if(wpm < 20) {
+      msg = "🐢 Slow and steady, keep practicing!";
+    } else if(wpm < 40) {
+      msg = "🚀 Good speed! Keep it up!";
+    } else if(wpm < 60) {
+      msg = "🔥 Pro typer! Amazing work!";
+    } else {
+      msg = "🏆 Cyberpunk typing legend!";
+    }
+    if(accuracy < 80) {
+      msg += " ⚠️ Accuracy can be improved!";
+    } else if(accuracy === 100 && wpm >= 40) {
+      msg += " 🎉 Perfect accuracy! Neon sparkles for you!";
+      launchSparks();
+    }
+    rewardDiv.textContent = msg;
+    rewardDiv.style.opacity = 1;
+  }
+
+  // Neon spark particle effect
+  const sparkWrapper = document.getElementById('spark-wrapper');
+  function launchSparks() {
+    sparkWrapper.innerHTML = '';
+    for(let i=0; i<30; i++) {
+      const spark = document.createElement('div');
+      spark.classList.add('spark');
+      spark.style.left = (Math.random() * window.innerWidth) + 'px';
+      spark.style.top = (Math.random() * window.innerHeight) + 'px';
+      spark.style.animationDuration = (2 + Math.random() * 2) + 's';
+      spark.style.animationDelay = (Math.random() * 2) + 's';
+      sparkWrapper.appendChild(spark);
+      setTimeout(() => spark.remove(), 4000);
+    }
+  }
+
+  inputArea.addEventListener('input', (e) => {
+    const input = e.target.value;
+    const mistakes = updateQuoteDisplay(input);
+    updateStats(input, mistakes);
+    if(input === selectedQuote) endTest();
+  });
+
+  startBtn.addEventListener('click', startTest);
+</script>
+</body>
+</html>
+6
